@@ -1,32 +1,57 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
-    <router-view/>
+    <my-header>{{ headerTitle }}</my-header>
+    <search-input
+            :placeholder="placeholder"
+            :maxlength="maxlength"
+    />
+    <router-view v-slot="{ Component }">
+      <keep-alive>
+        <component :is="Component" />
+      </keep-alive>
+    </router-view>
+    <tab />
   </div>
 </template>
 
-<style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
+<script>
 
-#nav {
-  padding: 30px;
+    import MyHeader from '@/components/Header';
+    import Tab from '@/components/Tab';
+    import SearchInput from '@/components/SearchInput';
 
-  a {
-    font-weight: bold;
-    color: #2c3e50;
+    import { computed, watch } from 'vue';
+    import { useStore } from 'vuex';
+    import { useRouter } from 'vue-router';
 
-    &.router-link-exact-active {
-      color: #42b983;
+    export default {
+        name: 'App',
+        components: {
+            MyHeader,
+            SearchInput,
+            Tab
+        },
+        setup () {
+            const store = useStore(),
+                state = store.state,
+                router = useRouter();
+
+            router.push('/');
+            store.commit('setPlaceholder', 'day');
+
+            watch(() => {
+                return router.currentRoute.value.name;
+            }, (value) => {
+                store.commit('setHeaderTitle', value);
+                store.commit('setPlaceholder', value);
+                store.commit('setMaxlength', value);
+                store.commit('setField', value);
+                store.commit('setErrorCode', 0);
+            })
+
+            return computed(() => state).value; // {}
+        }
     }
-  }
-}
-</style>
+
+</script>
+
